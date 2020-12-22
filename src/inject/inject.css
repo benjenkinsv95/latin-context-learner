@@ -1,21 +1,22 @@
 .latin-to-english {
     /* color: #ff6961!important; */
-    -webkit-text-decoration-style: wavy!important;
-    -moz-text-decoration-style: wavy!important;
-    
-    text-decoration: underline solid LightSkyBlue!important;
-    text-decoration-thickness: 0.25em!important;
+    /* -webkit-text-decoration-style: wavy!important;
+    -moz-text-decoration-style: wavy!important; */
+
+    /* text-decoration: underline solid LightSkyBlue!important; */
+    border-bottom:  0.2em solid LightSkyBlue!important;
+    /* text-decoration-thickness: 0.25em!important; */
     /* text-decoration-style: wavy!important;
     text-decoration-color: red; */
     text-overflow: ellipsis!important;
     color: unset!important;
 
     /* For tooltip */
-    position: relative;
+    /* position: relative; */
   }
 
 .latin-to-english-tooltip-text {
-    visibility: hidden;
+    /* visibility: hidden;
     width: 120px;
     background-color: #050505;
     border: 1px solid LightSkyBlue;
@@ -26,16 +27,16 @@
 
     top: 135%;
     left: 50%;
-    margin-left: -60px;
-   
+    margin-left: -60px; */
+
     /* Position the tooltip text - see examples below! */
-    position: absolute;
-    z-index: 10000;
+    /* position: absolute;
+    z-index: 2147483647; */
   }
-  
+
   /* Show the tooltip text when you mouse over the tooltip container */
   .latin-to-english:hover .latin-to-english-tooltip-text {
-    visibility: visible;
+    /* visibility: visible; */
   }
 
   .latin-to-english-wrapper a {
@@ -44,4 +45,11 @@
 
   .latin-to-english-wrapper a:hover {
     color: cyan!important;
+  }
+
+/* https://stackoverflow.com/a/32162038/3500171 */
+  abbr[title] {
+    border-bottom: none !important;
+    cursor: inherit !important;
+    text-decoration: none !important;
   }
