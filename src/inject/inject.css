@@ -1,3 +1,47 @@
-/**
- * Place your custom CSS styles here.
- **/
+.latin-to-english {
+    /* color: #ff6961!important; */
+    -webkit-text-decoration-style: wavy!important;
+    -moz-text-decoration-style: wavy!important;
+    
+    text-decoration: underline solid LightSkyBlue!important;
+    text-decoration-thickness: 0.25em!important;
+    /* text-decoration-style: wavy!important;
+    text-decoration-color: red; */
+    text-overflow: ellipsis!important;
+    color: unset!important;
+
+    /* For tooltip */
+    position: relative;
+  }
+
+.latin-to-english-tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #050505;
+    border: 1px solid LightSkyBlue;
+    color: LightSkyBlue;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+
+    top: 135%;
+    left: 50%;
+    margin-left: -60px;
+   
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 10000;
+  }
+  
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .latin-to-english:hover .latin-to-english-tooltip-text {
+    visibility: visible;
+  }
+
+  .latin-to-english-wrapper a {
+    color: unset!important;
+  }
+
+  .latin-to-english-wrapper a:hover {
+    color: cyan!important;
+  }
