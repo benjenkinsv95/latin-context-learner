@@ -15,8 +15,11 @@
     /* position: relative; */
   } 
 
-  .target-to-source-language {
+  .duo-replaced {
     border-bottom:  0.2em solid LightSkyBlue!important;
+  }
+  .duo-skipped {
+    border-bottom:  0.2em solid HotPink!important;
   }
 
 .target-to-source-language-wrapper-tooltip-text {
