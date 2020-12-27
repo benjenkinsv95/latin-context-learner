@@ -8,8 +8,7 @@
     /* text-decoration-thickness: 0.25em!important; */
     /* text-decoration-style: wavy!important;
     text-decoration-color: red; */
-    text-overflow: ellipsis!important;
-    color: unset!important;
+    /* text-overflow: ellipsis!important; */
 
     /* For tooltip */
     /* position: relative; */
@@ -22,29 +21,6 @@
     border-bottom:  0.2em solid HotPink!important;
   }
 
-.target-to-source-language-wrapper-tooltip-text {
-    /* visibility: hidden;
-    width: 120px;
-    background-color: #050505;
-    border: 1px solid LightSkyBlue;
-    color: LightSkyBlue;
-    text-align: center;
-    padding: 5px 0;
-    border-radius: 6px;
-
-    top: 135%;
-    left: 50%;
-    margin-left: -60px; */
-
-    /* Position the tooltip text - see examples below! */
-    /* position: absolute;
-    z-index: 2147483647; */
-  }
-
-  /* Show the tooltip text when you mouse over the tooltip container */
-  .target-to-source-language-wrapper:hover .target-to-source-language-wrapper-tooltip-text {
-    /* visibility: visible; */
-  }
 
   .target-to-source-language-wrapper-wrapper a {
     color: unset!important;
@@ -55,8 +31,8 @@
   }
 
 /* https://stackoverflow.com/a/32162038/3500171 */
-  abbr[title] {
+  /* abbr[title] {
     border-bottom: none !important;
     cursor: inherit !important;
     text-decoration: none !important;
-  }
+  } */
