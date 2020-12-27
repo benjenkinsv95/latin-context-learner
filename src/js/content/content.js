@@ -34,19 +34,22 @@ const buildKnownSourceLanguageWordsSelector = () => {
 }
 const knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
 
+const elementsNotToSelect = 'style,meta,script,noscript,base,title,link,area,audio,img,map,track,video,embed,iframe,object,param,picture,source,svg,math,canvas,datalist,fieldset,input,optgroup,option,select,textarea,slot,template,applet,basefont,bgsound,frame,frameset,image,isindex,keygen,menuitem,multicol,nextid,noembed,noframes,plaintext,shadow,spacer,xmp,*[user-select=text]'
 const injectedCssClasses =
   '.target-to-source-language-wrapper,.target-to-source-language-tooltip-text,.target-to-source-language-replacement'
 
+
 const getInnerMostSourceLanguageElements = (containerSelector) => {
-  if ($(containerSelector).is(injectedCssClasses)) {
-    // console.log('returning early', $(containerSelector))
+  console.log('container', containerSelector)
+  if ($(containerSelector).is(injectedCssClasses) || $(containerSelector).is(elementsNotToSelect)) {
+    console.log('returning early', $(containerSelector))
     // return nothing
     return $(null)
   }
 
-  const allSourceLanguageMatchedElements = $(containerSelector).find(
-    knownSourceLanguageWordsSelector
-  )
+  const allSourceLanguageMatchedElements = $(containerSelector)
+    .find(knownSourceLanguageWordsSelector)
+  
   const innermostSourceLanguageElements = allSourceLanguageMatchedElements.not(
     allSourceLanguageMatchedElements.has(allSourceLanguageMatchedElements)
   )
@@ -55,10 +58,12 @@ const getInnerMostSourceLanguageElements = (containerSelector) => {
   const innermostWithoutMarked = innermostSourceLanguageElements
     .not(injectedCssClasses)
     .not(innermostSourceLanguageElements.has(injectedCssClasses))
-    .not('style')
-    .not('input')
-  // console.log('innermostWithoutMarked', innermostWithoutMarked)
-  return innermostWithoutMarked
+
+  const innermostWithoutElementsNotToSelect = innermostWithoutMarked
+    .not(elementsNotToSelect)
+    .not(innermostWithoutMarked.has(elementsNotToSelect))
+  console.log('innermostWithoutMarked', innermostWithoutElementsNotToSelect)
+  return innermostWithoutElementsNotToSelect
 }
 
 // match a single sourceLanguage phrase
@@ -226,7 +231,7 @@ const replaceWords = (innerMostNode) => {
 
         // If less than 0.2, replace with targetLanguage word
         // TODO change 2
-        const shouldReplace = Math.random() < 0.5
+        const shouldReplace = Math.random() <= 0.80
         let replacement = shouldReplace ? randomTargetLanguageWord : matchText
         const isCapitalized = matchText[0] === matchText[0].toUpperCase()
         if (isCapitalized) {
@@ -268,8 +273,9 @@ const markNewContent = function (mutationsList, observer) {
   console.log('Marking new content')
   for (const mutation of mutationsList) {
     for (const node of mutation.addedNodes) {
-      if (!$(node).is(injectedCssClasses)) {
-        // console.log('in is', $(node))
+      if (!$(node).is(injectedCssClasses) && !$(node).is(elementsNotToSelect)) {
+      
+        console.log('in is', $(node))
         // find the sourceLanguage phrases
         getInnerMostSourceLanguageElements(node).each(function () {
           replaceWords($(this))
