@@ -1,3 +1,4 @@
+import "../css/options.css";
 // docs: https://developer.chrome.com/docs/extensions/mv2/options/#:~:text=A%20user%20can%20view%20an,then%20selection%20the%20options%20link.
 // Saves options to chrome.storage
 function save_options() {
