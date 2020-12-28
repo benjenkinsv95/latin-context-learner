@@ -34,7 +34,11 @@ const buildKnownSourceLanguageWordsSelector = () => {
 }
 const knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
 
-const elementsNotToSelect = 'style,meta,script,noscript,base,title,link,area,audio,img,map,track,video,embed,iframe,object,param,picture,source,svg,math,canvas,datalist,fieldset,input,optgroup,option,select,textarea,slot,template,applet,basefont,bgsound,frame,frameset,image,isindex,keygen,menuitem,multicol,nextid,noembed,noframes,plaintext,shadow,spacer,xmp,*[user-select=text]'
+// ,*[user-select=text] ?
+const elementsNotToContain = 'style,meta,script,noscript,base,title,link,embed'
+const elementsNotToSelect = elementsNotToContain + 'img,area,audio,map,track,video,iframe,object,param,picture,source,svg,math,canvas,datalist,fieldset,input,optgroup,option,select,textarea,slot,template,applet,basefont,bgsound,frame,frameset,image,isindex,keygen,menuitem,multicol,nextid,noembed,noframes,plaintext,shadow,spacer,xmp,code,code *'
+
+
 const injectedCssClasses =
   '.target-to-source-language-wrapper,.target-to-source-language-tooltip-text,.target-to-source-language-replacement'
 
@@ -61,7 +65,7 @@ const getInnerMostSourceLanguageElements = (containerSelector) => {
 
   const innermostWithoutElementsNotToSelect = innermostWithoutMarked
     .not(elementsNotToSelect)
-    .not(innermostWithoutMarked.has(elementsNotToSelect))
+    .not(innermostWithoutMarked.has(elementsNotToContain))
   console.log('innermostWithoutMarked', innermostWithoutElementsNotToSelect)
   return innermostWithoutElementsNotToSelect
 }
