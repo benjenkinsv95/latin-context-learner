@@ -12,7 +12,9 @@
       "https://drive.google.com/*",
       "https://docs.google.com/*", 
       "https://www.reddit.com/*",
-      "https://www.facebook.com/*"
+      "https://www.facebook.com/*",
+      "https://www.latin-is-simple.com/*",
+      "http://www.latin-dictionary.net/*"
   ]
    }
  ],
