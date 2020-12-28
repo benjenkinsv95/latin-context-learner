@@ -197,63 +197,70 @@ function restoreOptions () {
   chrome.storage.sync.get(
     {
       username: '',
-      replacementPercentage: 100,
-      sourceLanguageToTargetLanguageEntries: [] // default to an empty array until we can fetch some
+      replacementPercentage: 100
     },
-    function ({ username, replacementPercentage, sourceLanguageToTargetLanguageEntries }) {
-      store.replacementPercentage = replacementPercentage
-      store.sourceLanguageToTargetLanguageEntries = sourceLanguageToTargetLanguageEntries
-
-      // build after loading source phrases to target phrases
-      store.knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
-      store.allSourceLanguagePhrasesRegex = buildAllSourceLanguagePhrasesRegex()
-      console.log({ username })
-
-      // Make an ajax request to fetch the source to target phrases
-      $.ajax({
-        url:
-          'https://duolingo-django-api.herokuapp.com/source_to_target_phrases/',
-        method: 'POST',
-        data: {
-          username
-        }
-      })
-        .then((responseDataStr) => {
-          const responseData = JSON.parse(responseDataStr)
-          console.log('source to target phrases from api', responseData.source_to_target_translations)
-
-          const newSourceLanguageToTargetLanguageEntries = Object.entries(
-            responseData.source_to_target_translations
-          )
-          // Sort entries so longer entries come up first. So we match the longest text if it includes multiple words
-          sortBySourceLanguage(newSourceLanguageToTargetLanguageEntries)
-
-          // eslint-disable-next-line no-undef
-          chrome.storage.sync.set({ sourceLanguageToTargetLanguageEntries: newSourceLanguageToTargetLanguageEntries }, function () {
-            console.log('New source to target phrases loaded')
-          })
-        }
-        )
-        .catch((error) =>
-          console.error('failed to fetch source to target phrases', error)
-        )
-
-      // get the innermost elements that contain a source language phrase
-      getInnerMostSourceLanguageElements('body').each(function () {
-        // replace the source language phrase within each element
-        replaceWords($(this))
-      })
-
-      // Options for the observer (which mutations to observe)
-      const config = { childList: true, subtree: true }
-      // Create an observer instance linked to the callback function
+    function ({ username, replacementPercentage }) {
+      // we use local storage for sourceLanguageToTargetLanguageEntries since it can be very large
       // eslint-disable-next-line no-undef
-      const observer = new MutationObserver(markNewContent)
+      chrome.storage.local.get(
+        {
+          sourceLanguageToTargetLanguageEntries: [] // default to an empty array until we can fetch some
+        },
+        function ({ sourceLanguageToTargetLanguageEntries }) {
+          store.replacementPercentage = replacementPercentage
+          store.sourceLanguageToTargetLanguageEntries = sourceLanguageToTargetLanguageEntries
 
-      // Start observing the target node for configured mutations
-      observer.observe(document, config)
-    }
-  )
+          // build after loading source phrases to target phrases
+          store.knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
+          store.allSourceLanguagePhrasesRegex = buildAllSourceLanguagePhrasesRegex()
+          console.log({ username })
+
+          // Make an ajax request to fetch the source to target phrases
+          $.ajax({
+            url:
+          'https://duolingo-django-api.herokuapp.com/source_to_target_phrases/',
+            method: 'POST',
+            data: {
+              username
+            }
+          })
+            .then((responseDataStr) => {
+              const responseData = JSON.parse(responseDataStr)
+              console.log('source to target phrases from api', responseData.source_to_target_translations)
+
+              const newSourceLanguageToTargetLanguageEntries = Object.entries(
+                responseData.source_to_target_translations
+              )
+              // Sort entries so longer entries come up first. So we match the longest text if it includes multiple words
+              sortBySourceLanguage(newSourceLanguageToTargetLanguageEntries)
+
+              // eslint-disable-next-line no-undef
+              chrome.storage.local.set({ sourceLanguageToTargetLanguageEntries: newSourceLanguageToTargetLanguageEntries }, function () {
+                console.log('New source to target phrases loaded')
+              })
+            }
+            )
+            .catch((error) =>
+              console.error('failed to fetch source to target phrases', error)
+            )
+
+          // get the innermost elements that contain a source language phrase
+          getInnerMostSourceLanguageElements('body').each(function () {
+            // replace the source language phrase within each element
+            replaceWords($(this))
+          })
+
+          // Options for the observer (which mutations to observe)
+          const config = { childList: true, subtree: true }
+          // Create an observer instance linked to the callback function
+          // eslint-disable-next-line no-undef
+          const observer = new MutationObserver(markNewContent)
+
+          // Start observing the target node for configured mutations
+          observer.observe(document, config)
+        }
+      )
+    })
 }
 
 // eslint-disable-next-line no-undef
