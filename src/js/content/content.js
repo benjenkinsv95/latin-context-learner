@@ -7,15 +7,6 @@ const store = require('./store')
 
 store.styles = require('./styles')
 
-const { sourceLanguageToTargetLanguageDuolingo } = require('./data')
-// convert sourceLanguageToTarget into an array, so we can use array iteration methods on it
-store.sourceLanguageToTargetLanguageEntries = Object.entries(
-  sourceLanguageToTargetLanguageDuolingo.source_to_target_translations
-)
-
-// Sort entries so longer entries come up first. So we match the longest text if it includes multiple words
-sortBySourceLanguage(store.sourceLanguageToTargetLanguageEntries)
-
 addInsensitiveContainsToJQuery($)
 
 const buildKnownSourceLanguageWordsSelector = () => {
@@ -28,8 +19,6 @@ const buildKnownSourceLanguageWordsSelector = () => {
   // combine the individiual queries into one massive query with a comma
   return sourceLanguageCssQueries.join(',')
 }
-// TODO: Move after loading source to target language words
-store.knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
 
 // Elements to avoid selecting
 store.elementsNotToContain = 'style,meta,script,noscript,base,title,link,embed'
@@ -101,10 +90,7 @@ const buildAllSourceLanguagePhrasesRegex = () => {
   return new RegExp(`(${sourceLanguagePhraseRegexStr})`, 'gi')
 }
 
-// TODO: Move until after loading source language to target language
-store.allSourceLanguagePhrasesRegex = buildAllSourceLanguagePhrasesRegex()
-
-// Return the specific source language to target language we are looking for 
+// Return the specific source language to target language we are looking for
 const findSpecificSourceLanguagePhrase = (text) => {
   let individualSourceLanguagePhraseRegexAll
 
@@ -122,7 +108,6 @@ const findSpecificSourceLanguagePhrase = (text) => {
 
   return specificSourceLanguageToTargetLanguage
 }
-
 
 const replaceWords = (innerMostNode) => {
   let text = innerMostNode.text()
@@ -212,10 +197,16 @@ function restoreOptions () {
   chrome.storage.sync.get(
     {
       username: '',
-      replacementPercentage: 100
+      replacementPercentage: 100,
+      sourceLanguageToTargetLanguageEntries: [] // default to an empty array until we can fetch some
     },
-    function ({ username, replacementPercentage }) {
+    function ({ username, replacementPercentage, sourceLanguageToTargetLanguageEntries }) {
       store.replacementPercentage = replacementPercentage
+      store.sourceLanguageToTargetLanguageEntries = sourceLanguageToTargetLanguageEntries
+
+      // build after loading source phrases to target phrases
+      store.knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
+      store.allSourceLanguagePhrasesRegex = buildAllSourceLanguagePhrasesRegex()
       console.log({ username })
 
       // Make an ajax request to fetch the source to target phrases
@@ -227,8 +218,21 @@ function restoreOptions () {
           username
         }
       })
-        .then((responseData) =>
-          console.log('source to target phrases from api', responseData)
+        .then((responseDataStr) => {
+          const responseData = JSON.parse(responseDataStr)
+          console.log('source to target phrases from api', responseData.source_to_target_translations)
+
+          const newSourceLanguageToTargetLanguageEntries = Object.entries(
+            responseData.source_to_target_translations
+          )
+          // Sort entries so longer entries come up first. So we match the longest text if it includes multiple words
+          sortBySourceLanguage(newSourceLanguageToTargetLanguageEntries)
+
+          // eslint-disable-next-line no-undef
+          chrome.storage.sync.set({ sourceLanguageToTargetLanguageEntries: newSourceLanguageToTargetLanguageEntries }, function () {
+            console.log('New source to target phrases loaded')
+          })
+        }
         )
         .catch((error) =>
           console.error('failed to fetch source to target phrases', error)
