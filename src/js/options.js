@@ -3,15 +3,16 @@ import '../css/options.css'
 // Saves options to chrome.storage
 function saveOptions () {
   const username = document.getElementById('username').value
+  const replacementPercentage = document.getElementById('replacement-percentage').value
 
   // eslint-disable-next-line no-undef
-  chrome.storage.sync.set({ username }, function () {
+  chrome.storage.sync.set({ username, replacementPercentage }, function () {
     // Update status to let user know options were saved.
     const status = document.getElementById('status')
     status.textContent = 'Options saved.'
     setTimeout(function () {
       status.textContent = ''
-    }, 750)
+    }, 3000)
   })
 }
 
@@ -21,9 +22,11 @@ function restoreOptions () {
   // Use default value color = 'red' and likesColor = true.
   // eslint-disable-next-line no-undef
   chrome.storage.sync.get({
-    username: ''
-  }, function ({ username }) {
+    username: '',
+    replacementPercentage: 100 // Default to replacing every word
+  }, function ({ username, replacementPercentage }) {
     document.getElementById('username').value = username
+    document.getElementById('replacement-percentage').value = replacementPercentage
   })
 }
 

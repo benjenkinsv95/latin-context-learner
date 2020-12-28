@@ -146,9 +146,8 @@ const replaceWords = (innerMostNode) => {
         const targetLanguageWords = specificSourceLanguageToTargetLanguage[1]
         const randomTargetLanguageWord = chooseRandomElementFrom(targetLanguageWords)
 
-        // If less than number, replace with targetLanguage word
-        // TODO change hard coded number, extract to options
-        const shouldReplace = Math.random() <= 0.80
+        // If less than replacementPercentage, replace with targetLanguage word
+        const shouldReplace = Math.random() <= (store.replacementPercentage / 100.0)
         let replacement = shouldReplace ? randomTargetLanguageWord : matchText
 
         if (isCapitalized(matchText)) {
@@ -212,9 +211,11 @@ function restoreOptions () {
   // eslint-disable-next-line no-undef
   chrome.storage.sync.get(
     {
-      username: ''
+      username: '',
+      replacementPercentage: 100
     },
-    function ({ username }) {
+    function ({ username, replacementPercentage }) {
+      store.replacementPercentage = replacementPercentage
       console.log({ username })
 
       // Make an ajax request to fetch the source to target phrases
