@@ -1,7 +1,7 @@
 import '../../css/content.css'
 
 const $ = require('jquery')
-const { sortBySourceLanguage, addInsensitiveContainsToJQuery, chooseRandomElementFrom } = require('./utils')
+const { sortBySourceLanguage, addInsensitiveContainsToJQuery, chooseRandomElementFrom, capitalizeFirstLetter, getMatchesAsArray, isCapitalized } = require('./utils')
 // load the store object where I will add different pieces of data
 const store = require('./store')
 
@@ -113,7 +113,7 @@ const findSpecificSourceLanguagePhrase = (text) => {
     .find(([sourceLanguagePhrase]) => {
       individualSourceLanguagePhraseRegexAll = createIndividualSourceLanguageRegex(sourceLanguagePhrase)
 
-      // if the current sourceLanguage phrase matches contains the potential traitor we matched, then we found the object we are looking for
+      // if the current sourceLanguage phrase matches contains the phrase we matched, then we found the object we are looking for
       const currentSourceLanguagePhraseMatches = text.match(individualSourceLanguagePhraseRegexAll)
 
       // If we have matches, then this is the specific source language phrase we were looking for
@@ -123,38 +123,12 @@ const findSpecificSourceLanguagePhrase = (text) => {
   return specificSourceLanguageToTargetLanguage
 }
 
-// TODO: Extract to utils
-// https://stackoverflow.com/a/1026087/3500171
-function capitalizeFirstLetter (string) {
-  return string.charAt(0).toUpperCase() + string.slice(1)
-}
-
-// TODO: Extract to utils
-// Convert matches iterator to an array. Each match contains the text, start index, and end index
-const getMatchesInArray = (regexp, str) => {
-  const matches = str.matchAll(regexp)
-  const matchesArr = []
-
-  // loop through every match
-  for (const match of matches) {
-    // add it to the new array
-    matchesArr.push({
-      matchText: match[0],
-      startIndex: match.index,
-      endIndex: match.index + match[0].length
-    })
-  }
-
-  return matchesArr
-}
 
 const replaceWords = (innerMostNode) => {
   let text = innerMostNode.text()
 
-  // TODO: Rename traitor and verified matches
-
   // Reverse matches so we can loop through it backwards, this way when we replace text we don't affect indexes for future elements
-  const sourceLanguagePhraseMatches = getMatchesInArray(
+  const sourceLanguagePhraseMatches = getMatchesAsArray(
     store.allSourceLanguagePhrasesRegex,
     text
   ).reverse()
@@ -177,9 +151,7 @@ const replaceWords = (innerMostNode) => {
         const shouldReplace = Math.random() <= 0.80
         let replacement = shouldReplace ? randomTargetLanguageWord : matchText
 
-        // TODO: Extract to a function in utils
-        const isCapitalized = matchText[0] === matchText[0].toUpperCase()
-        if (isCapitalized) {
+        if (isCapitalized(matchText)) {
           replacement = capitalizeFirstLetter(replacement)
           // console.log(`Replacing ${matchText} with ${replacement}`)
         }
