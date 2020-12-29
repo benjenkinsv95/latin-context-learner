@@ -47,11 +47,25 @@ const isCapitalized = text => {
   return text.length > 0 && text[0] === text[0].toUpperCase()
 }
 
+// https://stackoverflow.com/a/8729274/3500171
+const getParentDOMNodes = (domElement) => {
+  let currentElement = domElement
+  const parentElements = []
+
+  while (currentElement) {
+    parentElements.unshift(currentElement)
+    currentElement = currentElement.parentNode
+  }
+
+  return parentElements
+}
+
 module.exports = {
   sortBySourceLanguage,
   addInsensitiveContainsToJQuery,
   chooseRandomElementFrom,
   capitalizeFirstLetter,
   getMatchesAsArray,
-  isCapitalized
+  isCapitalized,
+  getParentDOMNodes
 }

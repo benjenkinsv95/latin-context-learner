@@ -1,7 +1,10 @@
 import '../../css/content.css'
 
 const $ = require('jquery')
-const { sortBySourceLanguage, addInsensitiveContainsToJQuery, chooseRandomElementFrom, capitalizeFirstLetter, getMatchesAsArray, isCapitalized } = require('./utils')
+const {
+  sortBySourceLanguage, addInsensitiveContainsToJQuery, chooseRandomElementFrom,
+  capitalizeFirstLetter, getMatchesAsArray, isCapitalized/*, getParentDOMNodes */
+} = require('./utils')
 // load the store object where I will add different pieces of data
 const store = require('./store')
 
@@ -120,6 +123,12 @@ const replaceWords = (innerMostNode) => {
 
   // if we found source language phrases
   if (sourceLanguagePhraseMatches && sourceLanguagePhraseMatches.length > 0) {
+    // find the parent dom nodes, so we can ensure they have the same textContent afterwards
+    // TODO: Get working or replace logic
+    // const innerMostNodeDOM = innerMostNode[0]
+    // const parents = getParentDOMNodes(innerMostNodeDOM)
+    // const parentsWithTextContent = parents.map(parent => ({ parent, textContent: parent.textContent }))
+
     // loop through each source language phrase we matched
     for (const sourceLanguagePhraseMatch of sourceLanguagePhraseMatches) {
       const { matchText, startIndex, endIndex } = sourceLanguagePhraseMatch
@@ -171,6 +180,20 @@ const replaceWords = (innerMostNode) => {
     // replace the source language phrases with the target phrases html
     console.log('\nold html', $(innerMostNode).html(), '\n\nnew html', text)
     $(innerMostNode).html(text)
+
+    // TODO: Get working or replace logic
+    // setInterval(() => {
+    //   // After replacing the text, update the textContent for this element and its parent back to the original text
+    // // this is important for content that is initially shown but can later be edited.
+    //   parentsWithTextContent.forEach(({ parent, textContent }) => {
+    //     try {
+    //       console.log('setting textContent of ', parent, ' to ', textContent)
+    //       Object.defineProperty(parent, 'textContent', { value: textContent, writable: false })
+    //     } catch (err) {
+    //       console.error(err)
+    //     }
+    //   })
+    // }, 5000)
   }
 }
 
