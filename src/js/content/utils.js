@@ -60,6 +60,25 @@ const getParentDOMNodes = (domElement) => {
   return parentElements
 }
 
+// Given an html tag like <sup id="cite_ref-88" class="reference">
+// return a simplified tag of the same length: <xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>
+const getSimplifiedHtmlForMatching = html => {
+  const matchInnerHtmlTag = /(?<=<)\/?\s*[^>]*/g
+  const sourceLanguagePhraseMatches = getMatchesAsArray(
+    matchInnerHtmlTag,
+    html
+  ).reverse()
+
+  let newHtml = html
+  for (const sourceLanguagePhraseMatch of sourceLanguagePhraseMatches) {
+    const { matchText, startIndex, endIndex } = sourceLanguagePhraseMatch
+    // use a dummy letter, in this case z.
+    newHtml = newHtml.slice(0, startIndex) + 'z'.repeat(matchText.length) + newHtml.slice(endIndex)
+  }
+
+  return newHtml
+}
+
 module.exports = {
   sortBySourceLanguage,
   addInsensitiveContainsToJQuery,
@@ -67,5 +86,6 @@ module.exports = {
   capitalizeFirstLetter,
   getMatchesAsArray,
   isCapitalized,
-  getParentDOMNodes
+  getParentDOMNodes,
+  getSimplifiedHtmlForMatching
 }

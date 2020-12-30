@@ -3,7 +3,7 @@ import '../../css/content.css'
 const $ = require('jquery')
 const {
   sortBySourceLanguage, addInsensitiveContainsToJQuery, chooseRandomElementFrom,
-  capitalizeFirstLetter, getMatchesAsArray, isCapitalized/*, getParentDOMNodes */
+  capitalizeFirstLetter, getMatchesAsArray, isCapitalized, getSimplifiedHtmlForMatching/*, getParentDOMNodes */
 } = require('./utils')
 // load the store object where I will add different pieces of data
 const store = require('./store')
@@ -65,8 +65,24 @@ const getInnerMostSourceLanguageElements = (containerSelector) => {
 }
 
 // match a single sourceLanguage phrase
-// select sourceLanguage phrases, match at word breaks
-const createIndividuaSourceLanguageRegexString = (sourceLanguage) => `(\\b${sourceLanguage}\\b)`
+// select sourceLanguage phrases, match at word breaks (\b)
+const createIndividuaSourceLanguageRegexString = (sourceLanguagePhrase) => {
+  // Don't match the inside of inner tags only match the content itself
+  // Following this approach: https://stackoverflow.com/a/31389823/3500171
+  const betweenEachNonSpace = '(?:<[^>]+>)*'
+  const replacementRegexToMatchSpaces = '(?:\\s*<[^>]+>\\s*)*\\s+(?:\\s*<[^>]+>\\s*)*'
+
+  // split into source language words
+  let sourceLanguageWords = sourceLanguagePhrase.split(/ /)
+
+  // dont match angle brackets between non space characters
+  sourceLanguageWords = sourceLanguageWords.map(word => word.split(/(?!$)/u).join(betweenEachNonSpace))
+
+  // rejoin and dont match sapces in angle brackets
+  const sourceLanguageRegex = sourceLanguageWords.join(replacementRegexToMatchSpaces)
+
+  return `(\\b${sourceLanguageRegex}\\b)`
+}
 
 // match a single sourceLanguage phrase with regex
 const createIndividualSourceLanguageRegex = (sourceLanguage, flags = 'gi') => {
@@ -113,12 +129,14 @@ const findSpecificSourceLanguagePhrase = (text) => {
 }
 
 const replaceWords = (innerMostNode) => {
-  let text = innerMostNode.text()
+  let html = innerMostNode.html()
 
+  // Simplify tags to make matching easier to perform with a regex
+  const simplifiedHtmlForMatching = getSimplifiedHtmlForMatching(html)
   // Reverse matches so we can loop through it backwards, this way when we replace text we don't affect indexes for future elements
   const sourceLanguagePhraseMatches = getMatchesAsArray(
     store.allSourceLanguagePhrasesRegex,
-    text
+    simplifiedHtmlForMatching
   ).reverse()
 
   // if we found source language phrases
@@ -162,7 +180,7 @@ const replaceWords = (innerMostNode) => {
         const innerStyles = shouldReplace ? duoReplacedStyles : duoSkippedStyles
 
         // build replacement html
-        const html =
+        const newMatchHtml =
           `<span class="target-to-source-language-wrapper" style="${unsetEverythingStyles + wrapperStyles}">` +
           `<abbr class="target-to-source-language-tooltip-text"  style="${tooltipStyles}" title="${titleText}">` +
           `<span style="${innerStyles}" tabindex="-1" class="target-to-source-language-replacement">` +
@@ -173,13 +191,13 @@ const replaceWords = (innerMostNode) => {
 
         // replace the text with the wrapped html
         // TODO: Likely want to replace html instead of text
-        text = text.slice(0, startIndex) + html + text.slice(endIndex)
+        html = html.slice(0, startIndex) + newMatchHtml + html.slice(endIndex)
       }
     }
 
     // replace the source language phrases with the target phrases html
-    console.log('\nold html', $(innerMostNode).html(), '\n\nnew html', text)
-    $(innerMostNode).html(text)
+    // console.log('\nold html', $(innerMostNode).html(), '\n\nnew html', text)
+    $(innerMostNode).html(html)
 
     // TODO: Get working or replace logic
     // setInterval(() => {
@@ -199,7 +217,7 @@ const replaceWords = (innerMostNode) => {
 
 // Callback function to execute when mutations are observed
 const markNewContent = function (mutationsList, observer) {
-  console.log('Marking new content')
+  // console.log('Marking new content')
   for (const mutation of mutationsList) {
     for (const node of mutation.addedNodes) {
       // if the node isnt a node we already inserted and it isnt a node we dont want to select
