@@ -27,6 +27,7 @@ const capitalizeFirstLetter = string => {
 
 // Convert matches iterator to an array. Each match contains the text, start index, and end index
 const getMatchesAsArray = (regexp, str) => {
+  // console.log('str', regexp)
   const matches = str.matchAll(regexp)
   const matchesArr = []
 

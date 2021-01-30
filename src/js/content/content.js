@@ -1,6 +1,7 @@
 import '../../css/content.css'
 
 const $ = require('jquery')
+const { knuthShuffle } = require('knuth-shuffle')
 const {
   sortBySourceLanguage, addInsensitiveContainsToJQuery, chooseRandomElementFrom,
   capitalizeFirstLetter, getMatchesAsArray, isCapitalized, getSimplifiedHtmlForMatching/*, getParentDOMNodes */
@@ -23,9 +24,10 @@ const buildKnownSourceLanguageWordsSelector = () => {
   return sourceLanguageCssQueries.join(',')
 }
 
+store.twitterElements = '.DraftEditor-root,.public-DraftStyleDefault-block,.public-DraftStyleDefault-block > span > span'
 // Elements to avoid selecting
 store.elementsNotToContain = 'style,meta,script,noscript,base,title,link,embed'
-store.elementsNotToSelect = store.elementsNotToContain + 'img,area,audio,map,track,video,iframe,object,param,picture,source,svg,math,canvas,datalist,fieldset,input,optgroup,option,select,textarea,slot,template,applet,basefont,bgsound,frame,frameset,image,isindex,keygen,menuitem,multicol,nextid,noembed,noframes,plaintext,shadow,spacer,xmp,code,code *'
+store.elementsNotToSelect = store.elementsNotToContain + `img,area,audio,map,track,video,iframe,object,param,picture,source,svg,math,canvas,datalist,fieldset,input,optgroup,option,select,textarea,slot,template,applet,basefont,bgsound,frame,frameset,image,isindex,keygen,menuitem,multicol,nextid,noembed,noframes,plaintext,shadow,spacer,xmp,code,code *,${store.twitterElements}`
 
 // Classes of elements that will be injected into the page. We will ignore searching inside of them for matches
 // since they have already matched and been replaced.
@@ -44,10 +46,17 @@ const getInnerMostSourceLanguageElements = (containerSelector) => {
   const allSourceLanguageMatchedElements = $(containerSelector)
     .add($(containerSelector).find(store.knownSourceLanguageWordsSelector))
 
+  // use regex to verify these matches are what we expect (this makes sure we don't match words inside of another word)
+  // ex. god shouldnt match inside zygodactyl (Hello future reader, yes this is a very specific and annoying bug on the parrot wiki page)
+  const allVerifiedSourceLanguageMatchedElements = allSourceLanguageMatchedElements.filter(function () {
+    const html = $(this).html() ? $(this).html() : ''
+    return store.allSourceLanguagePhrasesRegex.test(html.toLowerCase())
+  })
+
   // Find elements with matches that don't contain other elements that match
   // So we find the most specific match.
-  const innermostSourceLanguageElements = allSourceLanguageMatchedElements.not(
-    allSourceLanguageMatchedElements.has(allSourceLanguageMatchedElements)
+  const innermostSourceLanguageElements = allVerifiedSourceLanguageMatchedElements.not(
+    allVerifiedSourceLanguageMatchedElements.has(allVerifiedSourceLanguageMatchedElements)
   )
 
   // filter out any sourceLanguage words that have already been switched
@@ -81,6 +90,7 @@ const createIndividuaSourceLanguageRegexString = (sourceLanguagePhrase) => {
   // rejoin and dont match sapces in angle brackets
   const sourceLanguageRegex = sourceLanguageWords.join(replacementRegexToMatchSpaces)
 
+  // Make sure there is either a word boundary or a double quote for an html string in front of it
   return `(\\b${sourceLanguageRegex}\\b)`
 }
 
@@ -138,6 +148,9 @@ const replaceWords = (innerMostNode) => {
     store.allSourceLanguagePhrasesRegex,
     simplifiedHtmlForMatching
   ).reverse()
+  // console.log(html, '\n')
+  // console.log(simplifiedHtmlForMatching, '\n')
+  // console.log(sourceLanguagePhraseMatches, '\n')
 
   // if we found source language phrases
   if (sourceLanguagePhraseMatches && sourceLanguagePhraseMatches.length > 0) {
@@ -196,7 +209,7 @@ const replaceWords = (innerMostNode) => {
     }
 
     // replace the source language phrases with the target phrases html
-    // console.log('\nold html', $(innerMostNode).html(), '\n\nnew html', text)
+    // console.log('\nold html', $(innerMostNode).html(), '\n\nnew html', html)
     $(innerMostNode).html(html)
 
     // TODO: Get working or replace logic
@@ -249,7 +262,16 @@ function restoreOptions () {
         },
         function ({ sourceLanguageToTargetLanguageEntries }) {
           store.replacementPercentage = replacementPercentage
-          store.sourceLanguageToTargetLanguageEntries = sourceLanguageToTargetLanguageEntries
+
+          console.log('sourceLanguageToTargetLanguageEntries', sourceLanguageToTargetLanguageEntries)
+          // randomize all entries
+          knuthShuffle(sourceLanguageToTargetLanguageEntries)
+          // pick off the first 100,
+          const randomEntries = sourceLanguageToTargetLanguageEntries.slice(0, 500)
+          // then sort them so the most specific options are picked first
+          sortBySourceLanguage(randomEntries)
+
+          store.sourceLanguageToTargetLanguageEntries = randomEntries
 
           // build after loading source phrases to target phrases
           store.knownSourceLanguageWordsSelector = buildKnownSourceLanguageWordsSelector()
